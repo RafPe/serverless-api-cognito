@@ -1,0 +1,14 @@
+# package directories
+node_modules
+jspm_packages
+
+sns/.serverless
+sns/node_modules
+sns/jspm_packages
+
+lambda
+
+# Serverless directories
+.serverless
+
+serverless.env.yml
