@@ -68,7 +68,7 @@ var poolData = {
     userAttr = jsonBody.attributes;
 
     functionsCommon.logmsg(component,uniqueId,'info','All required parameters received')
-    functionsCommon.logmsg(component,uniqueId,'info', JSON.stringify(userAttr) )
+    functionsCommon.logmsg(component,uniqueId,'info', JSON.stringify(jsonBody) )
     functionsCommon.logmsg(component,uniqueId,'info','Registering user ...')
 
     var userPool = new AWS.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
