@@ -1,0 +1,6 @@
+{
+	"resource": "/",
+	"path": "/",
+	"httpMethod": "GET",
+	"body": "{\"username\":\"rpieniaz\",\"password\":\"Password123!\"}"
+  }
