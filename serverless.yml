@@ -28,6 +28,59 @@ functions:
           cors: true
           private: true
 
+  authenticate:
+    handler: cognito/user/authenticate.authenticate
+    events:
+      - http:
+          path: cognito/user/authenticate
+          method: post
+          cors: true
+          private: true
+
+  forgotpwd:
+    handler: cognito/user/forgotpwd.forgotpwd
+    events:
+      - http:
+          path: cognito/user/forgotpwd
+          method: post
+          cors: true
+          private: true
+
+  resendcc:
+    handler: cognito/user/resendcc.resendcc
+    events:
+      - http:
+          path: cognito/user/resendcc
+          method: post
+          cors: true
+          private: true
+
+  verify:
+    handler: cognito/user/verify.verify
+    events:
+      - http:
+          path: cognito/user/verify
+          method: post
+          cors: true
+          private: true   
+
+  confirmfp:
+    handler: cognito/user/confirmfp.confirmfp
+    events:
+      - http:
+          path: cognito/user/confirmfp
+          method: post
+          cors: true
+          private: true                   
+  
+  confirmattr:
+    handler: cognito/admin/confirmattr.confirmattr
+    events:
+      - http:
+          path: cognito/admin/confirmattr
+          method: post
+          cors: true
+          private: true   
 
 resources:
   Resources:
@@ -55,6 +108,10 @@ resources:
                     - logs:CreateLogStream
                     - logs:PutLogEvents
                   Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*:*:*
+                - Effect: Allow
+                  Action:
+                    - cognito-idp:AdminUpdateUserAttributes
+                  Resource: arn:aws:cognito-idp:eu-west-1:171435972641:userpool/eu-west-1_ie8fXMaTL
                 - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
                   Action:
                     - sns:CreatePlatformEndpoint

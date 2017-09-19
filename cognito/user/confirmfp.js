@@ -12,7 +12,7 @@ const component  = 'cognito'
 
 var xSharedFnc = new xSharedFunctions('cognito');
 
-module.exports.verify = (event, context, callback) => {
+module.exports.confirmfp = (event, context, callback) => {
     const uniqueId      = uuid.v1();
     
     var xCognitoUserPoolMgr = new xCognitoUserPoolManager(uniqueId,callback);
@@ -39,7 +39,7 @@ module.exports.verify = (event, context, callback) => {
   
     var jsonBody = JSON.parse(event.body);
   
-    if ( !xSharedFnc.isDef(jsonBody.username) || !xSharedFnc.isDef(jsonBody.confirmationCode) )
+    if ( !xSharedFnc.isDef(jsonBody.username) || !xSharedFnc.isDef(jsonBody.confirmationCode) || !xSharedFnc.isDef(jsonBody.password) )
     {
       xSharedFnc.logmsg(uniqueId,'error','Missing required parameters in body (EC.002)');
       
@@ -56,6 +56,6 @@ module.exports.verify = (event, context, callback) => {
     xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
     xSharedFnc.logmsg(uniqueId,'info','Calling createPlatformEndpoint...');
   
-    xCognitoUserPoolMgr.confirmUser(jsonBody.username,jsonBody.confirmationCode);
+    xCognitoUserPoolMgr.confirmForgotPassword(jsonBody.username, jsonBody.confirmationCode, jsonBody.password)
   }
   

@@ -1,17 +1,27 @@
 //https://serverless.com/framework/docs/providers/aws/guide/testing/
 
 var AWS = require('aws-sdk');
-const uuid = require('uuid');
-var CognitoSDK = require('amazon-cognito-identity-js');
-var xSharedFunctions = require('./shared/xSharedFunctions');
+AWS.util.isBrowser = function() { return false; };
+
+const uuid                         = require('uuid');
+var CognitoSDK                     = require('amazon-cognito-identity-js');
+var xSharedFunctions               = require('./shared/xSharedFunctions');
+var CognitoIdentityServiceProvider = AWS.CognitoIdentityServiceProvider
 
 AWS.CognitoIdentityServiceProvider.AuthenticationDetails = CognitoSDK.AuthenticationDetails;
-AWS.CognitoIdentityServiceProvider.CognitoUserPool = CognitoSDK.CognitoUserPool;
-AWS.CognitoIdentityServiceProvider.CognitoUser = CognitoSDK.CognitoUser;
-AWS.CognitoIdentityServiceProvider.CognitoUserAttribute = CognitoSDK.CognitoUserAttribute;
+AWS.CognitoIdentityServiceProvider.CognitoUserPool       = CognitoSDK.CognitoUserPool;
+AWS.CognitoIdentityServiceProvider.CognitoUser           = CognitoSDK.CognitoUser;
+AWS.CognitoIdentityServiceProvider.CognitoUserAttribute  = CognitoSDK.CognitoUserAttribute;
 
 
-AWS.config.region = process.env.REGION;
+AWS.config.update({
+    accessKeyId: process.env.ACC_KEY,
+    secretAccessKey: process.env.SECRET_ACC_KEY,
+    region: process.env.REGION
+  });
+  
+
+  
   
 var poolData = { 
     UserPoolId: process.env.USER_POOL_ID,
@@ -22,6 +32,11 @@ var poolData = {
 class xCognitoUserPoolManager {  
     constructor(uuid,callback,disableLog){
         
+        this.adminClient = new CognitoIdentityServiceProvider({
+            apiVersion: '2016-04-19',
+            region: process.env.REGION
+          })
+
         this.userPool   = new AWS.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
         this.callback   = callback;
         this.component  = 'cognito';
@@ -35,6 +50,210 @@ class xCognitoUserPoolManager {
             region: process.env.REGION
         });
 
+    }
+
+    adminConfirmEmailAndPhone(usrName){
+        var that = this;
+        let res  = null;
+
+        that.adminClient.adminUpdateUserAttributes({
+            UserAttributes: [{
+                Name: 'phone_number_verified',
+                Value: 'true'
+              }, {
+                Name: 'email_verified',
+                Value: 'true'
+              }
+              // other user attributes like phone_number or email themselves, etc
+            ],
+            UserPoolId: process.env.USER_POOL_ID,
+            Username: usrName
+          }, function(err,result) {
+            if (err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to confirm user attributes (EC.011)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.006",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            } else {
+                that.xSharedFnc.logmsg(that.uuid,'info','Confirmed user attributes');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(result)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(result);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            }
+          })
+    }
+
+    confirmForgotPassword(usrName,confirmationCode,newPassword){
+
+        var that = this;
+        let res  = null;
+
+        var params = {
+            ClientId: process.env.CLIENT_ID,
+            Password: newPassword,
+            ConfirmationCode: confirmationCode, /* required */
+            Username: usrName, /* required */
+          };
+
+
+        this.adminClient.confirmForgotPassword(params, function(err, data) {
+            if (err){
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to complete forgot password flow (EC.012)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.012",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            }else{
+                that.xSharedFnc.logmsg(that.uuid,'info','completed forgot password flow');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(data)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(data);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            }
+        });
+
+    
+    }
+
+    resendConfirmationCode(usrName){
+        var that = this;
+        let res  = null;
+
+        const cognitoUser = new AWS.CognitoIdentityServiceProvider.CognitoUser({ Username: usrName, Pool: that.userPool });
+
+
+        cognitoUser.resendConfirmationCode(function(err, result) {
+            if (err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to resend confirmation code for user registration (EC.010)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.006",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            }else {
+                that.xSharedFnc.logmsg(that.uuid,'info','Sent user confirmation code');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(result)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(result);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            }
+
+        });
+
+    }
+
+    confirmUser(usrName,usrConfirmation){
+        var that = this;
+        let res  = null;
+
+        const cognitoUser = new AWS.CognitoIdentityServiceProvider.CognitoUser({ Username: usrName, Pool: that.userPool });
+
+
+        cognitoUser.confirmRegistration(usrConfirmation, true, function(err, result) {
+            if (err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to confirm user registration (EC.009)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.006",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            } else {
+                that.xSharedFnc.logmsg(that.uuid,'info','initiated user confirmation flow');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(result)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(result);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            }
+        });
+    }
+
+    forgotPassword(usrName){
+        var that = this;
+        let res  = null;
+
+        const cognitoUser = new AWS.CognitoIdentityServiceProvider.CognitoUser({ Username: usrName, Pool: that.userPool });
+
+        cognitoUser.forgotPassword({
+            onSuccess: function (data) {
+                that.xSharedFnc.logmsg(that.uuid,'info','initiated forgot password flow');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(data)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(data);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            },
+            onFailure: function(err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to initiate forgot password for user (EC.008)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.006",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            }
+        });
     }
 
     authenticate(usrName,usrPass){
