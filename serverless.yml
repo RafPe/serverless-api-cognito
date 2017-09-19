@@ -1,4 +1,4 @@
-service: aws-nodejs # NOTE: update this with your service name
+service: dojo-online-user
 
 custom: 
   region: 'eu-west-1'
@@ -8,6 +8,7 @@ custom:
 
 provider:
   name: aws
+  role: xmyCustRole1
   apiKeys:
     - myApiKey  
   runtime: nodejs6.10
@@ -19,10 +20,56 @@ provider:
 
 functions:
   register:
-    handler: cognito/register.register
+    handler: cognito/user/register.register
     events:
       - http:
-          path: cognito/user/create
+          path: cognito/user/register
           method: post
           cors: true
           private: true
+
+
+resources:
+  Resources:
+    xmyCustRole1:
+      Type: AWS::IAM::Role
+      Properties:
+        Path: /my/cust/path/
+        RoleName: xmyCustRole1
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: myPolicyName
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*:*:*
+                - Effect: Allow # note that these rights are given in the default policy and are required if you want logs out of your lambda(s)
+                  Action:
+                    - sns:CreatePlatformEndpoint
+                    - sns:ListEndpointsByPlatformApplication
+                    - sns:DeleteEndpoint
+                  Resource: arn:aws:sns:*:*:*           
+                - Effect: "Allow"
+                  Action:
+                    - "s3:PutObject"
+                  Resource:
+                    Fn::Join:
+                      - ""
+                      - - "arn:aws:s3:::"
+                        - "Ref" : "ServerlessDeploymentBucket"
+
+                        
+
+          
