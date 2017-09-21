@@ -301,7 +301,7 @@ class xCognitoUserPoolManager {
                     
     }
 
-    createNew(username, email, mobile ,password ,xtraUserAttributes) {
+    createNew(username, email ,password ,xtraUserAttributes) {
         var that = this;
         let res  = null;
 
@@ -318,13 +318,6 @@ class xCognitoUserPoolManager {
         };
     
         xtraUserAttributes.push(attrEmail);
-    
-        var attrMobile = {
-            name : 'phone_number',
-            value : mobile
-        };
-    
-        xtraUserAttributes.push(attrMobile);
     
         var attrUsername = {
             name : 'nickname',

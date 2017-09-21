@@ -35,7 +35,7 @@ module.exports.register = (event, context, callback) => {
   
     var jsonBody = JSON.parse(event.body);
   
-    if ( !xSharedFnc.isDef(jsonBody.username) || !xSharedFnc.isDef(jsonBody.email) || !xSharedFnc.isDef(jsonBody.mobile) || !xSharedFnc.isDef(jsonBody.password) )
+    if ( !xSharedFnc.isDef(jsonBody.username) || !xSharedFnc.isDef(jsonBody.email) || !xSharedFnc.isDef(jsonBody.password) )
     {
       xSharedFnc.logmsg(uniqueId,'error','Missing required parameters in body (EC.002)');
       
@@ -52,6 +52,6 @@ module.exports.register = (event, context, callback) => {
     xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
     xSharedFnc.logmsg(uniqueId,'info','Calling createPlatformEndpoint...');
   
-    xCognitoUserPoolMgr.createNew(jsonBody.username,jsonBody.email,jsonBody.mobile,jsonBody.password)           
+    xCognitoUserPoolMgr.createNew(jsonBody.username,jsonBody.email,jsonBody.password)           
   }
   
