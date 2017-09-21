@@ -52,7 +52,7 @@ class xCognitoUserPoolManager {
 
     }
 
-    adminConfirmMobile(usrName){
+    adminConfirmPhone(usrName){
         var that = this;
         let res  = null;
 

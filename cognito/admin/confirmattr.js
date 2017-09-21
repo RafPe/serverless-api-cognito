@@ -39,7 +39,7 @@ module.exports.confirmattr = (event, context, callback) => {
   
     var jsonBody = JSON.parse(event.body);
   
-    if ( !xSharedFnc.isDef(jsonBody.username) )
+    if ( !xSharedFnc.isDef(jsonBody.username) || !xSharedFnc.isDef(jsonBody.targetAttr) )
     {
       xSharedFnc.logmsg(uniqueId,'error','Missing required parameters in body (EC.002)');
       
@@ -56,6 +56,18 @@ module.exports.confirmattr = (event, context, callback) => {
     xSharedFnc.logmsg(uniqueId,'info','All required parameters received');
     xSharedFnc.logmsg(uniqueId,'info','Calling createPlatformEndpoint...');
   
-    xCognitoUserPoolMgr.adminConfirmEmailAndPhone(jsonBody.username);
+    if(jsonBody.targetAttr === 'phone'){
+      xCognitoUserPoolMgr.adminConfirmPhone(jsonBody.username);
+    }
+
+    if(jsonBody.targetAttr === 'email'){
+      xCognitoUserPoolMgr.adminConfirmEmail(jsonBody.username);
+    }
+
+    if(jsonBody.targetAttr === 'phone.email'){
+      xCognitoUserPoolMgr.adminConfirmEmailAndPhone(jsonBody.username);
+    }
+
+ 
   }
   
