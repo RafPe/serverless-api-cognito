@@ -71,7 +71,17 @@ functions:
           path: cognito/user/confirmfp
           method: post
           cors: true
-          private: true                   
+          private: true     
+
+  confirmfp:
+    handler: cognito/user/profile.uprofile
+    events:
+      - http:
+          path: cognito/user/profile
+          method: post
+          cors: true
+          private: true   
+
   
   confirmattr:
     handler: cognito/admin/confirmattr.confirmattr
