@@ -20,7 +20,10 @@ module.exports.uprofile = (event, context, callback) => {
     xSharedFnc.logmsg(uniqueId,'info','Starting execution');
     xSharedFnc.logmsg(uniqueId,'info',`${JSON.stringify(event)}`);
 
-    callback(null,xSharedFnc.generateSuccessResponse("yey") );
+    let profile = {
+      cognito: event.requestContext.authorizer.claims
+    }
+
+    callback(null,xSharedFnc.generateSuccessResponse(profile) );
 
   }
-  
