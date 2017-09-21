@@ -52,6 +52,92 @@ class xCognitoUserPoolManager {
 
     }
 
+    adminConfirmMobile(usrName){
+        var that = this;
+        let res  = null;
+
+        that.adminClient.adminUpdateUserAttributes({
+            UserAttributes: [{
+                Name: 'email_verified',
+                Value: 'true'
+              }
+              // other user attributes like phone_number or email themselves, etc
+            ],
+            UserPoolId: process.env.USER_POOL_ID,
+            Username: usrName
+          }, function(err,result) {
+            if (err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to confirm user attributes (EC.011)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.006",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            } else {
+                that.xSharedFnc.logmsg(that.uuid,'info','Confirmed user attributes');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(result)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(result);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            }
+          })
+    }
+
+    adminConfirmEmail(usrName){
+        var that = this;
+        let res  = null;
+
+        that.adminClient.adminUpdateUserAttributes({
+            UserAttributes: [{
+                Name: 'phone_number_verified',
+                Value: 'true'
+              }
+              // other user attributes like phone_number or email themselves, etc
+            ],
+            UserPoolId: process.env.USER_POOL_ID,
+            Username: usrName
+          }, function(err,result) {
+            if (err) {
+                that.xSharedFnc.logmsg(that.uuid,'error','Failed to confirm user attributes (EC.011)');
+                that.xSharedFnc.logmsg(that.uuid,'error',`${JSON.stringify(err)}`);
+
+                let errorData = {
+                    code: "EC.006",
+                    data: err
+                }
+
+                res = that.xSharedFnc.generateErrorResponse(errorData,errorData.data.statusCode);
+
+                that.callback(null,res);
+
+                return res;
+            } else {
+                that.xSharedFnc.logmsg(that.uuid,'info','Confirmed user attributes');
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(result)}`);
+
+                res = that.xSharedFnc.generateSuccessResponse(result);
+
+                that.xSharedFnc.logmsg(that.uuid,'info',`${JSON.stringify(res)}`);
+
+                that.callback(null,res);            
+
+                return res;
+            }
+          })
+    }
+
     adminConfirmEmailAndPhone(usrName){
         var that = this;
         let res  = null;
